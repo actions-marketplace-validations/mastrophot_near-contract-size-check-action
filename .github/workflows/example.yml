@@ -1,0 +1,33 @@
+name: Example - NEAR Contract Size Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  size-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Run size check action
+        id: size
+        uses: ./
+        with:
+          build-command: cargo build --target wasm32-unknown-unknown --release
+          compare-ref: HEAD~1
+          size-limit-bytes: 4194304
+          warning-threshold-pct: 85
+          fail-if-over-limit: true
+
+      - name: Print outputs
+        run: |
+          echo "Current bytes: ${{ steps.size.outputs.current-size-bytes }}"
+          echo "Usage (%): ${{ steps.size.outputs.usage-percent }}"
+          echo "Over limit: ${{ steps.size.outputs.over-limit }}"
+          echo "Suggestions:"
+          echo '${{ steps.size.outputs.optimization-suggestions }}'

@@ -1,0 +1,84 @@
+name: "NEAR Contract Size Check"
+description: "Build a NEAR contract, validate WASM size against limits, compare with a baseline build, and provide optimization suggestions."
+author: "mastrophot"
+branding:
+  icon: "alert-triangle"
+  color: "orange"
+
+inputs:
+  build-command:
+    description: "Command to build the current contract WASM."
+    required: false
+    default: "cargo build --target wasm32-unknown-unknown --release"
+  working-directory:
+    description: "Project directory where build command runs."
+    required: false
+    default: "."
+  wasm-path:
+    description: "Explicit path to built WASM file (relative to working-directory or absolute). If empty, action auto-detects .wasm under target/wasm32-unknown-unknown/release."
+    required: false
+    default: ""
+  size-limit-bytes:
+    description: "Hard limit in bytes. Default is 4 MiB."
+    required: false
+    default: "4194304"
+  warning-threshold-pct:
+    description: "Warn when usage percent is >= this threshold."
+    required: false
+    default: "85"
+  fail-if-over-limit:
+    description: "Fail workflow when WASM size exceeds size-limit-bytes."
+    required: false
+    default: "true"
+  fail-on-warning:
+    description: "Fail workflow when warning threshold is reached."
+    required: false
+    default: "false"
+  enable-compare:
+    description: "Build a baseline from compare-ref and report size delta."
+    required: false
+    default: "true"
+  compare-ref:
+    description: "Git ref for baseline comparison (e.g. HEAD~1, origin/main)."
+    required: false
+    default: "HEAD~1"
+  baseline-build-command:
+    description: "Optional baseline build command. If empty, uses build-command."
+    required: false
+    default: ""
+  baseline-wasm-path:
+    description: "Optional explicit baseline WASM path. If empty, uses wasm-path or auto-detection."
+    required: false
+    default: ""
+  write-summary:
+    description: "Write markdown summary to GitHub Step Summary."
+    required: false
+    default: "true"
+
+outputs:
+  wasm-path:
+    description: "Resolved current WASM path."
+  current-size-bytes:
+    description: "Current WASM size in bytes."
+  size-limit-bytes:
+    description: "Configured size limit in bytes."
+  usage-percent:
+    description: "Current size usage percent vs limit."
+  warning-triggered:
+    description: "Whether warning threshold was reached."
+  over-limit:
+    description: "Whether current size exceeds hard limit."
+  baseline-wasm-path:
+    description: "Resolved baseline WASM path, if comparison is available."
+  baseline-size-bytes:
+    description: "Baseline WASM size in bytes, if comparison is available."
+  delta-bytes:
+    description: "Current minus baseline size in bytes."
+  delta-percent:
+    description: "Percent growth vs baseline size."
+  optimization-suggestions:
+    description: "Markdown list of optimization suggestions."
+
+runs:
+  using: "node20"
+  main: "src/index.js"
